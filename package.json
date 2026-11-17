@@ -1,0 +1,53 @@
+{
+  "name": "cryptochart",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "@radix-ui/react-select": "^2.2.6",
+    "@radix-ui/react-separator": "^1.1.8",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@rainbow-me/rainbowkit": "^2.2.11",
+    "@tanstack/react-query": "^5.101.4",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lightweight-charts": "^5.1.0",
+    "lucide-react": "^0.562.0",
+    "next": "16.1.0",
+    "query-string": "^9.3.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-error-boundary": "^6.1.2",
+    "react-globe.gl": "^2.38.0",
+    "tailwind-merge": "^3.4.0",
+    "three": "^0.185.1",
+    "topojson-client": "^3.1.0",
+    "viem": "^2.55.13",
+    "wagmi": "^2.19.5",
+    "world-countries": "^5.1.0"
+  },
+  "overrides": {
+    "qr": "0.5.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/three": "^0.185.4",
+    "@types/topojson-client": "^3.1.5",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "prettier": "^3.7.4",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
