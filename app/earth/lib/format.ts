@@ -1,5 +1,5 @@
 export function formatUsd(n: number, digits = 2): string {
-  if (n === 0) return "$0";
+  if (n === 0) return '$0';
   const abs = Math.abs(n);
   if (abs >= 1e12) return `$${(n / 1e12).toFixed(2)}T`;
   if (abs >= 1e9) return `$${(n / 1e9).toFixed(2)}B`;
@@ -10,8 +10,7 @@ export function formatUsd(n: number, digits = 2): string {
 }
 
 export function formatPct(n: number | null | undefined, digits = 2): string {
-  if (n == null || Number.isNaN(n)) return "—";
+  if (n == null || Number.isNaN(n)) return '—';
   const s = n.toFixed(digits);
-  return `${n >= 0 ? "+" : ""}${s}%`;
+  return `${n >= 0 ? '+' : ''}${s}%`;
 }
-

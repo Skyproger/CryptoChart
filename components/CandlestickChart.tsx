@@ -1,11 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState, useTransition } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { getCandlestickConfig, getChartConfig, PERIOD_BUTTONS, PERIOD_CONFIG } from '@/constants';
 import { CandlestickSeries, createChart, IChartApi, ISeriesApi } from 'lightweight-charts';
 import { fetcher } from '@/lib/coingecko.actions';
 import { convertOHLCData } from '@/lib/utils';
-
 
 const CandlestickChart = ({
   children,
@@ -18,56 +17,52 @@ const CandlestickChart = ({
   const chartRef = useRef<IChartApi | null>(null);
   const candleSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
 
-  const [period, setPeriod] = useState(initialPeriod);
-  const [ohlcData, setOhlcData] = useState<OHLCData[]>(data ?? []);
-  const [isPending, startTransition] = useTransition();
+  const lastFittedPeriodRef = useRef<Period | null>(null);
+  const [chartData, setChartData] = useState({ period: initialPeriod, data: data ?? [] });
+  const [isPending, setIsPending] = useState(false);
+  const { period, data: ohlcData } = chartData;
 
-  const fetchOHLCData = async (selectedPeriod: Period) => {
+  const preparedCandles = useMemo(() => {
+    const convertedToSeconds = ohlcData.map(
+      (item) => [Math.floor(item[0] / 1000), item[1], item[2], item[3], item[4]] as OHLCData,
+    );
+    return convertOHLCData(convertedToSeconds);
+  }, [ohlcData]);
+
+  const handlePeriodChange = async (newPeriod: Period) => {
+    if (newPeriod === period || isPending) return;
+
+    setIsPending(true);
     try {
-      const { days } = PERIOD_CONFIG[selectedPeriod];
-
+      const { days } = PERIOD_CONFIG[newPeriod];
       const newData = await fetcher<OHLCData[]>(`/coins/${coinId}/ohlc`, {
         vs_currency: 'usd',
         days,
         precision: 'full',
       });
 
-      startTransition(() => {
-        setOhlcData(newData ?? []);
-      });
+      // Keep the selected period and its candles in sync, including on request failure.
+      setChartData({ period: newPeriod, data: newData ?? [] });
     } catch (e) {
       console.error('Failed to fetch OHLCData', e);
+    } finally {
+      setIsPending(false);
     }
-  };
-
-  const handlePeriodChange = (newPeriod: Period) => {
-    if (newPeriod === period) return;
-
-    setPeriod(newPeriod);
-    fetchOHLCData(newPeriod);
   };
 
   useEffect(() => {
     const container = chartContainerRef.current;
     if (!container) return;
 
-    const showTime = ['daily', 'weekly', 'monthly'].includes(period);
-
     const chart = createChart(container, {
-      ...getChartConfig(height, showTime),
+      ...getChartConfig(container.clientHeight),
       width: container.clientWidth,
     });
     const series = chart.addSeries(CandlestickSeries, getCandlestickConfig());
 
-    const convertedToSeconds = ohlcData.map(
-      (item) => [Math.floor(item[0] / 1000), item[1], item[2], item[3], item[4]] as OHLCData,
-    );
-
-    series.setData(convertOHLCData(convertedToSeconds));
-    chart.timeScale().fitContent();
-
     chartRef.current = chart;
     candleSeriesRef.current = series;
+    lastFittedPeriodRef.current = null;
 
     const observer = new ResizeObserver((entries) => {
       if (!entries.length) return;
@@ -81,18 +76,27 @@ const CandlestickChart = ({
       chartRef.current = null;
       candleSeriesRef.current = null;
     };
+  }, []);
+
+  useEffect(() => {
+    chartRef.current?.applyOptions({
+      height,
+      timeScale: { timeVisible: ['daily', 'weekly', 'monthly'].includes(period) },
+    });
   }, [height, period]);
 
   useEffect(() => {
-    if (!candleSeriesRef.current) return;
+    const chart = chartRef.current;
+    const series = candleSeriesRef.current;
+    if (!chart || !series) return;
 
-    const convertedToSeconds = ohlcData.map(
-      (item) => [Math.floor(item[0] / 1000), item[1], item[2], item[3], item[4]] as OHLCData,
-    );
+    series.setData(preparedCandles);
 
-    candleSeriesRef.current.setData(convertOHLCData(convertedToSeconds));
-    chartRef.current?.timeScale().fitContent();
-  }, [ohlcData]);
+    if (lastFittedPeriodRef.current !== period && preparedCandles.length > 0) {
+      chart.timeScale().fitContent();
+      lastFittedPeriodRef.current = period;
+    }
+  }, [preparedCandles, period]);
 
   return (
     <div className="p-3 mt-5 rounded-lg bg-dark-500">

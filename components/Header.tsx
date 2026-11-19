@@ -2,19 +2,30 @@
 
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 const ConnectWallet = dynamic(() => import('@/components/ConnectWallet'), {
   ssr: false,
-  loading: () => <div className="w-40 h-10" />,
+  loading: () => (
+    <button
+      type="button"
+      disabled
+      aria-busy="true"
+      className="h-10 shrink-0 rounded-xl bg-blue-600 px-4 font-bold whitespace-nowrap text-white opacity-70"
+    >
+      Loading wallet…
+    </button>
+  ),
 });
 
 const NAV_LINK_BASE =
-  'px-6 py-5 flex items-center h-full transition-all font-medium text-purple-100 hover:text-white cursor-pointer';
+  'flex items-center h-full transition-all font-medium text-purple-100 hover:text-white cursor-pointer';
 
 const Header = () => {
   const pathname = usePathname();
+  const [walletRequested, setWalletRequested] = useState(false);
 
   return (
     <header className="border-b border-dark-400 h-20">
@@ -23,7 +34,7 @@ const Header = () => {
           CryptoChart
         </Link>
 
-        <nav className="flex h-full items-center">
+        <nav className="flex h-full items-center gap-6">
           <Link
             href="/"
             className={cn(NAV_LINK_BASE, 'max-sm:hidden', {
@@ -52,7 +63,17 @@ const Header = () => {
             Earth
           </Link>
 
-          <ConnectWallet />
+          {walletRequested ? (
+            <ConnectWallet />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setWalletRequested(true)}
+              className="h-10 shrink-0 cursor-pointer rounded-xl bg-blue-600 px-4 font-bold whitespace-nowrap text-white hover:bg-blue-500"
+            >
+              Connect Wallet
+            </button>
+          )}
         </nav>
       </div>
     </header>

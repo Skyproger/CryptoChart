@@ -5,21 +5,6 @@ import {
   DeepPartial,
 } from 'lightweight-charts';
 
-export const navItems = [
-  {
-    label: 'Home',
-    href: '/',
-  },
-  {
-    label: 'Search',
-    href: '/',
-  },
-  {
-    label: 'All Coins',
-    href: '/coins',
-  },
-];
-
 const CHART_COLORS = {
   background: '#0b1116',
   text: '#8f9fb1',

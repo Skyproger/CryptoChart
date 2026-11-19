@@ -41,3 +41,19 @@ npm run dev
 ```
 
 Откройте `http://localhost:3000`.
+
+## CI/CD
+
+GitHub Actions запускает `npm ci`, линтер, проверку типов и production-сборку при push в `main` и pull request в эту ветку. Workflow также можно запустить вручную во вкладке Actions.
+
+Для сборки добавьте `COINGECKO_API_KEY` и `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` в GitHub → Settings → Secrets and variables → Actions → New repository secret. Pull request из внешнего форка потребует этих значений в отдельном доверенном запуске, обычный запуск из форка остановится после проверки типов.
+
+CD подготовлен в `.github/workflows/cd.yml` для будущего проекта Vercel. Он запускается вручную через Actions → CD (Vercel) → Run workflow на ветке `main`. Флажок `deploy` по умолчанию выключен. Для текущей работы подключать хостинг не требуется.
+
+При включённом `deploy` workflow загружает production-настройки Vercel, выполняет линтер, проверку типов и сборку через `vercel build`, затем публикует полученный результат через `vercel deploy --prebuilt`. Публикация выполняется после успешной сборки.
+
+Для будущего подключения создайте проект Vercel с Node.js 24.x, добавьте три переменные из раздела локального запуска в его Production Environment Variables, а в GitHub Secrets сохраните `VERCEL_TOKEN`, `VERCEL_ORG_ID` и `VERCEL_PROJECT_ID`.
+
+В `vercel.json` отключён автоматический деплой через Git-интеграцию Vercel. Публикацией управляет ручной workflow.
+
+[GitHub Actions](https://docs.github.com/en/actions/tutorials/build-and-test-code/nodejs) · [Vercel с GitHub Actions](https://vercel.com/kb/guide/how-can-i-use-github-actions-with-vercel)

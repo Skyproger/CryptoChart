@@ -1,4 +1,4 @@
-const BASE = "https://api.coingecko.com/api/v3";
+const BASE = 'https://api.coingecko.com/api/v3';
 
 export type MarketCoin = {
   id: string;
@@ -14,7 +14,7 @@ export type MarketCoin = {
 
 export async function cgFetch<T>(
   path: string,
-  init?: RequestInit & { revalidate?: number }
+  init?: RequestInit & { revalidate?: number },
 ): Promise<T> {
   const url = `${BASE}${path}`;
   const revalidate = init?.revalidate ?? 60;
@@ -22,8 +22,8 @@ export async function cgFetch<T>(
   const res = await fetch(url, {
     ...init,
     headers: {
-      accept: "application/json",
-      ...(apiKey ? { "x-cg-demo-api-key": apiKey } : {}),
+      accept: 'application/json',
+      ...(apiKey ? { 'x-cg-demo-api-key': apiKey } : {}),
       ...(init?.headers ?? {}),
     },
     next: { revalidate },
@@ -33,4 +33,3 @@ export async function cgFetch<T>(
   }
   return (await res.json()) as T;
 }
-

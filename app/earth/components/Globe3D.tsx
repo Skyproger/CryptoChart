@@ -1,21 +1,22 @@
-"use client";
+'use client';
 
-import dynamic from "next/dynamic";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { feature } from "topojson-client";
-import * as THREE from "three";
-import type { Feature, FeatureCollection, Geometry, Polygon, MultiPolygon } from "geojson";
-import type { Topology } from "topojson-specification";
-import type { MarketCoin } from "../lib/coingecko";
+import dynamic from 'next/dynamic';
+import type { GlobeMethods } from 'react-globe.gl';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { feature } from 'topojson-client';
+import * as THREE from 'three';
+import type { Feature, FeatureCollection, Geometry, Polygon, MultiPolygon } from 'geojson';
+import type { Topology } from 'topojson-specification';
+import type { MarketCoin } from '../lib/coingecko';
 import {
   assignCoinsToContinents,
   CONTINENT_COLORS,
   continentOf,
   type ContinentCode,
-} from "../lib/continents";
-import rawTopo from "../lib/countries-110m.json";
+} from '../lib/continents';
+import rawTopo from '../lib/countries-110m.json';
 
-const Globe = dynamic(() => import("react-globe.gl"), { ssr: false });
+const Globe = dynamic(() => import('react-globe.gl'), { ssr: false });
 
 const topo = rawTopo as unknown as Topology;
 
@@ -26,7 +27,7 @@ type CountryFeature = Feature<Polygon | MultiPolygon, { name: string }> & {
 
 export function Globe3D({ coins }: { coins: MarketCoin[] }) {
   const wrapRef = useRef<HTMLDivElement>(null);
-  const globeRef = useRef<any>(null);
+  const globeRef = useRef<GlobeMethods | undefined>(undefined);
   const configured = useRef(false);
   const [size, setSize] = useState({ w: 0, h: 0 });
 
@@ -54,7 +55,7 @@ export function Globe3D({ coins }: { coins: MarketCoin[] }) {
     controls.minDistance = 101;
     controls.maxDistance = 800;
     controls.zoomSpeed = 1.5;
-    if (typeof g.pointOfView === "function") {
+    if (typeof g.pointOfView === 'function') {
       g.pointOfView({ altitude: 2.2 }, 0);
     }
     configured.current = true;
@@ -67,7 +68,7 @@ export function Globe3D({ coins }: { coins: MarketCoin[] }) {
     return fc.features
       .filter(
         (f): f is Feature<Polygon | MultiPolygon, { name: string }> =>
-          f.geometry.type === "Polygon" || f.geometry.type === "MultiPolygon"
+          f.geometry.type === 'Polygon' || f.geometry.type === 'MultiPolygon',
       )
       .map((f) => ({
         ...f,
@@ -78,17 +79,17 @@ export function Globe3D({ coins }: { coins: MarketCoin[] }) {
 
   const { map: continentToCoin, list: legend } = useMemo(
     () => assignCoinsToContinents(coins),
-    [coins]
+    [coins],
   );
 
   const globeMaterial = useMemo(
     () =>
       new THREE.MeshPhongMaterial({
-        color: "#05080f",
-        emissive: "#020409",
+        color: '#05080f',
+        emissive: '#020409',
         shininess: 5,
       }),
-    []
+    [],
   );
 
   return (
@@ -97,18 +98,14 @@ export function Globe3D({ coins }: { coins: MarketCoin[] }) {
       className="relative h-full w-full overflow-hidden rounded border border-neutral-800/80 bg-neutral-950/60"
     >
       <div className="pointer-events-none absolute left-3 top-2 z-10 flex items-center gap-2">
-        <span className="text-[10px] uppercase tracking-[0.2em] text-emerald-400/80">
-          глобус
-        </span>
+        <span className="text-[10px] uppercase tracking-[0.2em] text-emerald-400/80">глобус</span>
         <span className="text-[10px] uppercase tracking-widest text-neutral-500">
           6 континентов = топ-6 монет по капитализации
         </span>
       </div>
 
       <div className="pointer-events-auto absolute right-3 top-2 z-10 flex flex-col gap-1 border border-neutral-800 bg-neutral-950/85 p-2 text-[10px] font-mono uppercase tracking-wider backdrop-blur">
-        {legend.length === 0 && (
-          <span className="text-neutral-500">нет данных</span>
-        )}
+        {legend.length === 0 && <span className="text-neutral-500">нет данных</span>}
         {legend.map(({ continent, name, coin }) => {
           const color = CONTINENT_COLORS[continent];
           return (
@@ -143,21 +140,21 @@ export function Globe3D({ coins }: { coins: MarketCoin[] }) {
           globeImageUrl={null}
           globeMaterial={globeMaterial}
           polygonsData={countries}
-          polygonGeoJsonGeometry={(d: any) => d.geometry}
-          polygonAltitude={(d: any) =>
-            continentToCoin.has(d.__continent) ? 0.022 : 0.004
-          }
-          polygonCapColor={(d: any) => {
-            const cont = d.__continent as ContinentCode | null;
-            if (!cont || !continentToCoin.has(cont)) return "rgba(50,54,66,0.55)";
+          polygonGeoJsonGeometry="geometry"
+          polygonAltitude={(d) => {
+            const continent = (d as CountryFeature).__continent;
+            return continent && continentToCoin.has(continent) ? 0.022 : 0.004;
+          }}
+          polygonCapColor={(d) => {
+            const cont = (d as CountryFeature).__continent;
+            if (!cont || !continentToCoin.has(cont)) return 'rgba(50,54,66,0.55)';
             return CONTINENT_COLORS[cont];
           }}
-          polygonSideColor={() => "rgba(5, 8, 16, 0.9)"}
-          polygonStrokeColor={() => "rgba(5, 8, 16, 0.9)"}
+          polygonSideColor={() => 'rgba(5, 8, 16, 0.9)'}
+          polygonStrokeColor={() => 'rgba(5, 8, 16, 0.9)'}
           polygonsTransitionDuration={800}
         />
       )}
     </div>
   );
 }
-

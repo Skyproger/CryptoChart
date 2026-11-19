@@ -28,7 +28,11 @@ const Coins = async ({ searchParams }: NextPageProps) => {
       cell: (coin) => (
         <>
           #{coin.market_cap_rank}
-          <Link href={`/coins/${coin.id}`} aria-label="View coin" className="absolute inset-0 z-10" />
+          <Link
+            href={`/coins/${coin.id}`}
+            aria-label="View coin"
+            className="absolute inset-0 z-10"
+          />
         </>
       ),
     },
@@ -37,11 +41,7 @@ const Coins = async ({ searchParams }: NextPageProps) => {
       cellClassName: 'py-3 font-semibold',
       cell: (coin) => (
         <div className="flex items-center gap-3">
-          <Image 
-            src={coin.image} 
-            alt={coin.name} 
-            width={36} 
-            height={36} />
+          <Image src={coin.image} alt={coin.name} width={36} height={36} />
           <p className="max-w-full truncate">
             {coin.name} ({coin.symbol.toUpperCase()})
           </p>

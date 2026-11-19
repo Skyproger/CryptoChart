@@ -16,14 +16,33 @@ type Rect = { x: number; y: number; w: number; h: number };
 export function squarify<T>(
   items: TreemapItem<T>[],
   width: number,
-  height: number
+  height: number,
 ): TreemapRect<T>[] {
-  if (!items.length || width <= 0 || height <= 0) return [];
-  const total = items.reduce((s, i) => s + i.value, 0);
-  const scale = (width * height) / total;
-  const scaled = items
-    .filter((i) => i.value > 0)
-    .map((i) => ({ value: i.value * scale, payload: i.payload }))
+  const area = width * height;
+  if (
+    !items.length ||
+    !Number.isFinite(width) ||
+    !Number.isFinite(height) ||
+    width <= 0 ||
+    height <= 0 ||
+    !Number.isFinite(area) ||
+    area <= 0
+  )
+    return [];
+
+  const positiveItems = items.filter((item) => Number.isFinite(item.value) && item.value > 0);
+  if (!positiveItems.length) return [];
+
+  // Normalize first so even multiple Number.MAX_VALUE inputs cannot overflow the sum.
+  const maxValue = positiveItems.reduce((max, item) => Math.max(max, item.value), 0);
+  const normalized = positiveItems.map((item) => ({
+    value: item.value / maxValue,
+    payload: item.payload,
+  }));
+  const total = normalized.reduce((sum, item) => sum + item.value, 0);
+  const scaled = normalized
+    .map((item) => ({ value: (item.value / total) * area, payload: item.payload }))
+    .filter((item) => item.value > 0)
     .sort((a, b) => b.value - a.value);
 
   const out: TreemapRect<T>[] = [];
@@ -31,30 +50,27 @@ export function squarify<T>(
   return out;
 }
 
-function layout<T>(
-  items: { value: number; payload: T }[],
-  rect: Rect,
-  out: TreemapRect<T>[]
-) {
-  if (!items.length) return;
-  const row: typeof items = [];
-  let best = Infinity;
-  const short = Math.min(rect.w, rect.h);
+function layout<T>(items: { value: number; payload: T }[], rect: Rect, out: TreemapRect<T>[]) {
+  let index = 0;
 
-  for (let i = 0; i < items.length; i++) {
-    const next = [...row, items[i]];
-    const worst = worstRatio(next, short);
-    if (worst <= best) {
-      row.push(items[i]);
+  // Every row consumes at least one item; no recursion or unchanged remainder.
+  while (index < items.length && rect.w > 0 && rect.h > 0) {
+    const row: typeof items = [];
+    let best = Infinity;
+    const short = Math.min(rect.w, rect.h);
+
+    while (index < items.length) {
+      const next = [...row, items[index]];
+      const worst = worstRatio(next, short);
+      if (row.length > 0 && !(worst <= best)) break;
+
+      row.push(items[index]);
+      index += 1;
       best = worst;
-    } else {
-      const consumed = placeRow(row, rect, out);
-      const remaining = items.slice(i);
-      layout(remaining, consumed, out);
-      return;
     }
+
+    rect = placeRow(row, rect, out);
   }
-  placeRow(row, rect, out);
 }
 
 function worstRatio<T>(row: { value: number; payload: T }[], short: number) {
@@ -74,12 +90,12 @@ function worstRatio<T>(row: { value: number; payload: T }[], short: number) {
 function placeRow<T>(
   row: { value: number; payload: T }[],
   rect: Rect,
-  out: TreemapRect<T>[]
+  out: TreemapRect<T>[],
 ): Rect {
   const sum = row.reduce((s, r) => s + r.value, 0);
   const horizontal = rect.w >= rect.h;
   if (horizontal) {
-    const w = sum / rect.h;
+    const w = Math.min(rect.w, sum / rect.h);
     let y = rect.y;
     for (const r of row) {
       const h = r.value / w;
@@ -88,7 +104,7 @@ function placeRow<T>(
     }
     return { x: rect.x + w, y: rect.y, w: rect.w - w, h: rect.h };
   } else {
-    const h = sum / rect.w;
+    const h = Math.min(rect.h, sum / rect.w);
     let x = rect.x;
     for (const r of row) {
       const w = r.value / h;
@@ -98,4 +114,3 @@ function placeRow<T>(
     return { x: rect.x, y: rect.y + h, w: rect.w, h: rect.h - h };
   }
 }
-

@@ -56,8 +56,8 @@ export const TrendingCoinsFallback = () => {
       <h4 className="text-xl md:text-2xl font-semibold mb-2 px-5">Trending Coins</h4>
       <DataTable
         data={dummyData}
-        columns={columns as any}
-        rowKey={(item: any) => item.id}
+        columns={columns}
+        rowKey={(item) => item.id}
         tableClassName="bg-dark-500 overflow-hidden"
       />
     </div>
@@ -111,8 +111,8 @@ export const CategoriesFallback = () => {
       <h4 className="text-xl md:text-2xl font-semibold mb-2 pl-5">Top Categories</h4>
       <DataTable
         data={dummyData}
-        columns={columns as any}
-        rowKey={(item: any) => item.id}
+        columns={columns}
+        rowKey={(item) => item.id}
         tableClassName="mt-3"
       />
     </div>

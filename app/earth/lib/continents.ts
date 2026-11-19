@@ -1,23 +1,16 @@
-import countries from "world-countries";
-import type { MarketCoin } from "@/lib/coingecko";
+import countryContinents from './country-continents.json';
+import type { MarketCoin } from './coingecko';
 
-export type ContinentCode =
-  | "NA"
-  | "SA"
-  | "EU"
-  | "AF"
-  | "AS"
-  | "OC"
-  | "AN";
+export type ContinentCode = 'NA' | 'SA' | 'EU' | 'AF' | 'AS' | 'OC' | 'AN';
 
 export const CONTINENT_NAMES: Record<ContinentCode, string> = {
-  NA: "Северная Америка",
-  SA: "Южная Америка",
-  EU: "Европа",
-  AF: "Африка",
-  AS: "Азия",
-  OC: "Океания",
-  AN: "Антарктида",
+  NA: 'Северная Америка',
+  SA: 'Южная Америка',
+  EU: 'Европа',
+  AF: 'Африка',
+  AS: 'Азия',
+  OC: 'Океания',
+  AN: 'Антарктида',
 };
 
 /**
@@ -25,72 +18,50 @@ export const CONTINENT_NAMES: Record<ContinentCode, string> = {
  * Independent from the coin's brand color, so viewers can memorize continent = hue.
  */
 export const CONTINENT_COLORS: Record<ContinentCode, string> = {
-  NA: "#F7931A", // orange (BTC-ish)
-  AS: "#FF3D9A", // hot pink
-  EU: "#F5D000", // vivid yellow
-  SA: "#9945FF", // purple
-  AF: "#00C2FF", // cyan blue
-  OC: "#14F195", // neon green
-  AN: "#94a3b8", // gray, if ever shown
+  NA: '#F7931A', // orange (BTC-ish)
+  AS: '#FF3D9A', // hot pink
+  EU: '#F5D000', // vivid yellow
+  SA: '#9945FF', // purple
+  AF: '#00C2FF', // cyan blue
+  OC: '#14F195', // neon green
+  AN: '#94a3b8', // gray, if ever shown
 };
 
 /**
  * Visual pairing order — coin rank #1 lands on the first continent in this list.
  * Order is deliberate: continents you associate with the biggest crypto activity first.
  */
-export const CONTINENT_ORDER: ContinentCode[] = ["NA", "AS", "EU", "SA", "AF", "OC"];
+export const CONTINENT_ORDER: ContinentCode[] = ['NA', 'AS', 'EU', 'SA', 'AF', 'OC'];
 
 /** Coin ids we skip when picking the "top" — stablecoins never move, boring on a globe. */
 const SKIP_COIN_IDS = new Set([
-  "tether",
-  "usd-coin",
-  "dai",
-  "binance-usd",
-  "true-usd",
-  "first-digital-usd",
-  "paypal-usd",
-  "usde",
-  "ethena-usde",
-  "wrapped-bitcoin",
-  "wrapped-steth",
-  "staked-ether",
-  "weth",
+  'tether',
+  'usd-coin',
+  'dai',
+  'binance-usd',
+  'true-usd',
+  'first-digital-usd',
+  'paypal-usd',
+  'usde',
+  'ethena-usde',
+  'wrapped-bitcoin',
+  'wrapped-steth',
+  'staked-ether',
+  'weth',
 ]);
 
-function classify(region: string, subregion: string): ContinentCode | null {
-  if (region === "Americas") {
-    if (subregion === "South America") return "SA";
-    return "NA"; // North America + Central America + Caribbean
-  }
-  if (region === "Europe") return "EU";
-  if (region === "Africa") return "AF";
-  if (region === "Asia") return "AS";
-  if (region === "Oceania") return "OC";
-  if (region === "Antarctic") return "AN";
-  return null;
+// Generated from world-countries 5.1.0: ISO numeric code → continent.
+// Keep padded and unpadded keys to match the globe's country IDs.
+const COUNTRY_TO_CONTINENT = new Map<string, ContinentCode>();
+for (const [code, continent] of Object.entries(countryContinents)) {
+  COUNTRY_TO_CONTINENT.set(code, continent as ContinentCode);
+  COUNTRY_TO_CONTINENT.set(String(parseInt(code, 10)), continent as ContinentCode);
 }
-
-/**
- * Build lookup: ISO 3166-1 numeric code (as string, matches world-atlas topojson `id`) → continent.
- */
-export const COUNTRY_TO_CONTINENT: Map<string, ContinentCode> = (() => {
-  const m = new Map<string, ContinentCode>();
-  for (const c of countries) {
-    const cont = classify(c.region, c.subregion);
-    if (!cont) continue;
-    // world-atlas uses numeric id, sometimes zero-padded. Store both forms.
-    if (c.ccn3) {
-      m.set(c.ccn3, cont);
-      m.set(String(parseInt(c.ccn3, 10)), cont);
-    }
-  }
-  return m;
-})();
 
 export function continentOf(id: string | number | undefined): ContinentCode | null {
   if (id == null) return null;
-  const key = typeof id === "number" ? String(id) : id;
-  return COUNTRY_TO_CONTINENT.get(key) ?? COUNTRY_TO_CONTINENT.get(key.padStart(3, "0")) ?? null;
+  const key = typeof id === 'number' ? String(id) : id;
+  return COUNTRY_TO_CONTINENT.get(key) ?? COUNTRY_TO_CONTINENT.get(key.padStart(3, '0')) ?? null;
 }
 
 /**
@@ -119,4 +90,3 @@ export function assignCoinsToContinents(coins: MarketCoin[]): {
 
   return { map, list };
 }
-

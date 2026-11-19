@@ -1,14 +1,10 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { MarketCoin } from "../lib/coingecko";
-import { formatPct, formatUsd } from "../lib/format";
-import { squarify, type TreemapRect } from "../lib/treemap";
-import {
-  assignCoinsToContinents,
-  CONTINENT_COLORS,
-  type ContinentCode,
-} from "../lib/continents";
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { MarketCoin } from '../lib/coingecko';
+import { formatPct, formatUsd } from '../lib/format';
+import { squarify, type TreemapRect } from '../lib/treemap';
+import { assignCoinsToContinents, CONTINENT_COLORS, type ContinentCode } from '../lib/continents';
 
 type HeatmapPayload = { coin: MarketCoin; color: string; continent: ContinentCode };
 
@@ -36,7 +32,7 @@ export function Heatmap({ coins }: { coins: MarketCoin[] }) {
         payload: { coin, continent, color: CONTINENT_COLORS[continent] },
       })),
       size.w,
-      size.h
+      size.h,
     );
   }, [coins, size]);
 
@@ -72,13 +68,13 @@ export function Heatmap({ coins }: { coins: MarketCoin[] }) {
                 width: w,
                 height: h,
                 background: color,
-                boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.35)",
+                boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.35)',
               }}
             >
               {showLabel && (
                 <div
                   className="flex h-full flex-col justify-between p-1.5"
-                  style={{ textShadow: "0 1px 3px rgba(0,0,0,0.85)" }}
+                  style={{ textShadow: '0 1px 3px rgba(0,0,0,0.85)' }}
                 >
                   <div className="flex items-baseline justify-between gap-1">
                     <span className="truncate font-mono text-[11px] font-semibold uppercase text-white">
@@ -109,4 +105,3 @@ export function Heatmap({ coins }: { coins: MarketCoin[] }) {
     </div>
   );
 }
-
