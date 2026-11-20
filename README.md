@@ -13,6 +13,7 @@ CryptoChart — веб-дашборд для мониторинга рынка �
 - **CoinGecko API** — котировки и рыночные данные.
 - **Lightweight Charts, react-globe.gl и Three.js** — графики и 3D-визуализация.
 - **RainbowKit, wagmi, viem и TanStack Query** — подключение кошельков и работа с Web3.
+- **CI/CD** — автоматический деплой Next.js: превью на каждый PR и публикация в продакшн из main.
 
 ## Подключение кошелька
 
